@@ -1159,6 +1159,11 @@ img
     margin-top: 12px;
 }
 
+.page-content .inner-page-content .blog-post .blog-content .blog-text p
+{
+    font-size: 16px;
+}
+
 .page-content .inner-page-content .blog-post .blog-content .blog-text textarea
 {
     width: 100%;
