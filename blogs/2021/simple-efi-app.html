@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UEFI : Creating a x86_64 Simple UEFI Application - VapourDev Blog</title>
+    <link rel="stylesheet" href="../../styles/light/v0.css">
+    <link rel="shortcut icon" href="../../assets/untitled.png" type="image/png">
+    <script data-ad-client="ca-pub-3936125256128056" async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+</head>
+<body>
+    
+    <div class="global-navbar">
+        <div class="inner-global-navbar">
+            
+            <div class="logo-area">
+                <a href="../../index.html"><h1 class="logo-text">Vapour Dev</h1></a>
+            </div>
+
+            <div id="humburgerDropDown" class="links-area">
+
+                <ul>
+
+                    <li class="active">
+                        <a href="../../blogs.html">Blogs</a>
+                    </li>
+
+                    <li class="">
+                        <a href="../../works.html">My Works</a>
+                    </li>
+
+                    <li class="">
+                        <a href="../../contact.html">Contact Me</a>
+                    </li>
+
+                    <li class="">
+                        <a href="../../about.html">About Me</a>
+                    </li>
+                
+                </ul>
+
+            </div>
+
+            <div id="btnHumburger" class="humburger">
+                <div></div>
+                <div></div>
+                <div></div>
+            </div>
+
+        </div>
+    </div>
+
+    <div class="trigger-contact-us">
+
+        <div class="inner-trigger">
+
+            <a href="mailto:vapourdev@gmail.com">VapourDev@gmail.com</a>
+
+        </div>
+
+    </div>
+
+
+    <div class="page-content mr-up-10">
+
+        <div class="inner-page-content">
+
+            <div class="my-info">
+
+                <h1>Blog.</h1>
+                <h1 class="info-logo">VapourDev</h1>
+
+                <div class="acc">
+
+                    <a href="mailto:vapourdev@gmail.com">Mail Me &RightAngleBracket;</a>
+
+                    <a href="https://www.github.com/vapourdev">Github &RightAngleBracket;</a>
+
+                </div>
+
+            </div>
+
+
+
+
+            <div class="page-identity">
+                <span>
+                    <a href="../../index.html">Home &RightAngleBracket;</a>
+                    <a href="../../blogs.html">Blogs &RightAngleBracket;</a>
+                    <a href="simple-efi-app.html" class="active">UEFI : Creating a x86_64 Simple UEFI Application &RightAngleBracket;</a>
+                </span>
+            </div>
+
+            <div class="blog-post">
+
+                <div class="blog-title">
+                    <h1>UEFI : Creating a x86_64 Simple UEFI Application</h1>
+                </div>
+
+                <div class="blog-content">
+
+                    <div class="blog-sections">
+                        <ul>
+                            <li><a href="#intro">Introduction</a></li>
+                            <li><a href="#setting_up">Setting up...</a></li>
+                            <li><a href="#code_time">Code Time</a></li>
+                            <li><a href="#code_compile">Write Rules to Compile</a></li>
+                            <li><a href="#test">Test It</a></li>
+                            <li><a href="#source_code">Source Code</a></li>
+                        </ul>
+                    </div>
+
+                    <div class="blog-text">
+
+                        <h1 id="intro">Introduction</h1>
+
+                        <p>
+                            In this Article, We are going to make a Simple x86_64 UEFI Application, that is able to print a text on screen and can be safely tested on a Real Hardware.
+                            We are going to make a simple application that use <a href="https://sourceforge.net/projects/gnu-efi/">GNU-EFI</a> as a bootloader, that supports x86 and 64 bit Architectures.
+                            We will be first Setup GNU-EFI bootloader. Then, We Configure Makefile, after that we will code a simple application in C, that can print texts.
+                            Then we can test it in our own PC.
+                            However, you want to grab the only source code instead of reading this blog, you can click the "Get Source Code" link.
+                        </p>
+
+                        <h1 id="setting_up">Setting UP GNU-EFI</h1>
+
+                        <p>First Grab the Source Code of GNU-EFI from this <a href="https://sourceforge.net/projects/gnu-efi/">Here</a> (We are using GNU-EFI 3.0.13 - Which is Latest Now ). After Grabbing the source code extract it in your Main Project Root directory.</p>
+                        <p>Open your Terminal, Change directory to your gnu-efi directory in your Main Project Root Directory, then Run <b>make</b> This will compile the raw library files.</p>
+                        <p>Then, We need to make a build rule to compile our code, That is Very Simple, Open your Main Project directory with your Favoirite code editor, then Open "gnu-efi-3.0.13/Makefile".</p>
+                        <p>On Line 45-47, you can see a SUBDIRS container, Replace that line with <b>SUBDIRS = lib gnuefi inc apps boot</b> We added one more value here that is "boot", this is the name of directory that consists our main Application code.</p>
+                        <p>Then Create a "boot" named directory in gnu-efi-3.0.13 directory.</p>
+
+                        <h1 id="code_time">Code Time</h1>
+
+                        <p>That's All we are now going to code a very basic "Hello Universe" Application.</p>
+                        <p>So, First of All, Create a new file "main.c" in "boot" directory and following code.</p>
+                        
+                        <textarea>
+// Include default uefi header files
+#include <efi.h>
+#include <efilib.h>
+
+// Main function that will be executed first
+EFI_STATUS efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable) 
+{
+
+    // This var will be used for Status of the tasks that we will be
+    EFI_STATUS Status;
+
+    // This contains Keyboard Inputs
+    EFI_INPUT_KEY Key;
+
+    //Store the system table
+    ST = SystemTable;
+
+    // Print Hello Universe to the console
+    Status = ST->ConOut->OutputString(ST->ConOut, L"Hello Universe!\n\r");
+
+    // If Printing failed, return
+    if (EFI_ERROR(Status))
+        return Status;
+
+    // Empty the Console Input Buffer
+    Status = ST->ConIn->Reset(ST->ConIn, FALSE);
+
+    // Check the Status of above command
+    if (EFI_ERROR(Status))
+        return Status;
+
+    // Poll For Key Input
+    while ((Status = ST->ConIn->ReadKeyStroke(ST->ConIn, &Key)) == EFI_NOT_READY);
+
+    // Exit to this Application
+    return Status;
+
+}
+                        </textarea>
+
+                        <p>Above code is decribed by comments. This application will exit when any Keyboard Input.</p>
+                        <p>We are completed our <b>Hello Universe</b> Code. Let's make rules to compile it.</p>
+
+                        <h1 id="code_compile">Write Rules to Compile</h1>
+
+                        <p>Now, we have to make a rule to compile the our C files. If you know about Makefile, you can understand following script.</p>
+                        <p>First Create <b>Makefile</b> in <b><i>gnu-efi-3.0.13/boot/</i></b> directory. And copy the following script :</p>
+                        
+                        <textarea>
+#  Copyright (C) 1999-2001 Hewlett-Packard Co.
+#	Contributed by David Mosberger <davidm@hpl.hp.com>
+#	Contributed by Stephane Eranian <eranian@hpl.hp.com>
+#
+#    All rights reserved.
+#
+#    Redistribution and use in source and binary forms, with or without
+#    modification, are permitted provided that the following conditions
+#    are met:
+#
+#    * Redistributions of source code must retain the above copyright
+#      notice, this list of conditions and the following disclaimer.
+#    * Redistributions in binary form must reproduce the above
+#      copyright notice, this list of conditions and the following
+#      disclaimer in the documentation and/or other materials
+#      provided with the distribution.
+#    * Neither the name of Hewlett-Packard Co. nor the names of its
+#      contributors may be used to endorse or promote products derived
+#      from this software without specific prior written permission.
+#
+#    THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND
+#    CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES,
+#    INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
+#    MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+#    DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS
+#    BE LIABLE FOR ANYDIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY,
+#    OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+#    PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
+#    PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+#    THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR
+#    TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF
+#    THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+#    SUCH DAMAGE.
+#
+
+SRCDIR = .
+
+VPATH = $(SRCDIR)
+
+include $(SRCDIR)/../Make.defaults
+
+TOPDIR = $(SRCDIR)/..
+
+CDIR=$(TOPDIR)/..
+LINUX_HEADERS	= /usr/src/sys/build
+CPPFLAGS	+= -D__KERNEL__ -I$(LINUX_HEADERS)/include
+CRTOBJS		= ../gnuefi/crt0-efi-$(ARCH).o
+
+LDSCRIPT	= $(TOPDIR)/gnuefi/elf_$(ARCH)_efi.lds
+ifneq (,$(findstring FreeBSD,$(OS)))
+LDSCRIPT	= $(TOPDIR)/gnuefi/elf_$(ARCH)_fbsd_efi.lds
+endif
+
+LDFLAGS		+= -shared -Bsymbolic -L../lib -L../gnuefi $(CRTOBJS)
+
+LOADLIBES	+= -lefi -lgnuefi
+LOADLIBES	+= $(LIBGCC)
+LOADLIBES	+= -T $(LDSCRIPT)
+
+TARGET_APPS = main.efi
+TARGET_BSDRIVERS =
+TARGET_RTDRIVERS =
+
+ifneq ($(HAVE_EFI_OBJCOPY),)
+
+FORMAT		:= --target efi-app-$(ARCH)
+$(TARGET_BSDRIVERS): FORMAT=--target efi-bsdrv-$(ARCH)
+$(TARGET_RTDRIVERS): FORMAT=--target efi-rtdrv-$(ARCH)
+
+else
+
+SUBSYSTEM	:= 0xa
+$(TARGET_BSDRIVERS): SUBSYSTEM = 0xb
+$(TARGET_RTDRIVERS): SUBSYSTEM = 0xc
+
+FORMAT		:= -O binary
+LDFLAGS		+= --defsym=EFI_SUBSYSTEM=$(SUBSYSTEM)
+
+endif
+
+TARGETS = $(TARGET_APPS) $(TARGET_BSDRIVERS) $(TARGET_RTDRIVERS)
+
+CFLAGS += -Wno-error=unused-parameter -Wno-error=unused-variable
+
+all:	$(TARGETS)
+
+clean:
+    rm -f $(TARGETS) *~ *.o *.so
+
+.PHONY: install
+
+include $(SRCDIR)/../Make.rules
+
+                        </textarea>
+
+                        <p>Note : Above code is not written by me, All Information is given in Top of file.</p>
+                        <p>I am not going to explain this script, I can say only that <i>This script set the rules for compiling C files to Object files or in other file formats</i>.</p>
+
+                        <p>Now we done, We can compile our code. To compile, First Change directory to main gnu-efi directory in terminal, then run <b>make bootloader</b> , This will compile the code and build our bootloader as <b>efi</b> file. You can see that file in the <b>Project/gnu-efi/x86_64/boot</b> directory. That is our bootloader.</p>
+
+                        <h1 id="test">Test It</h1>
+
+                        <p>Take a Pen drive, and make a directory named <b>efi/boot/</b>, then copy that <b>main.efi</b> file to that <b>boot</b> directory, and rename that file as <b>bootx64.efi</b> , That's all we have finished, now you can boot your Own UEFI Application.</p>
+                        <p>Congratulations, It's now Completed.</p>
+
+
+                        <h1 id="source_code">Source Code</h1>
+
+                        <p>You can download the source code from this <a href="https://github.com/VapourDev/all_blogs/tree/main/simple-uefi-app/">link</a>.</p>
+                        <p>Next Blog is Coming soon.</p>
+
+                        <div class="switch-blog">
+
+                            <a class="btngo" href="#">
+                                <div class="col">
+                                    &LeftAngleBracket; <h1>Blog Prev</h1>
+                                </div>
+                            </a>
+
+                            <a class="btngo" href="#">
+                                <div class="col">
+                                    &RightAngleBracket; <h1>Blog Next</h1>
+                                </div>
+                            </a>
+    
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+            <div class="posts-holder">
+
+                <div class="inner-posts">
+
+                    <div class="bl-title">
+                        <h1>Related Posts</h1>
+                    </div>
+
+                    <div class="content">
+
+                        <h1>No any contents yet.</h1>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+
+
+
+
+            <div class="go">
+                <a href="../../blogs.html">See My Blogs &RightAngleBracket;</a>
+            </div>
+            
+        </div>
+
+    </div>
+
+
+    <div id="full-image-gallery-view" onclick="hideFullGalleryView()" style="display: none;" class="full-gallery-view">
+
+        <img data-img="./assets/a9f468a00bfeeb705c9fc6ead66f99c2.jpg">
+    
+    </div>
+
+    <div class="footer-section">
+
+        <div class="inner-footer-section">
+    
+            <div class="contact-section">
+    
+                <div class="left-aligned">
+    
+                    <div class="btns mr-up-10 multi-btns">
+                        <span>For Any Quote, Feel Free to</span>
+                        <a class="link-btn" href="mailto:vapourdev@gmail.com">Mail Me : VapourDev@gmail.com &RightAngleBracket;</a> <a class="link-btn" href="https://www.github.com/VapourDev">Github/VapourDev &RightAngleBracket;</a>
+                    </div>
+    
+                </div>
+    
+            </div>
+    
+            <hr noshade class="seprator-hr mr-up-40">
+    
+            <div class="footer-links-section mr-up-40">
+    
+                <div class="inner-footer-links">
+    
+                    <div class="left-links">
+    
+                        <h1>Vapour Dev</h1>
+    
+                    </div>
+    
+                    <div class="right-links">
+
+                        <a>&copy; Copyright 2021</a>
+    
+                        <a class="link-btn" href="../../privacy.html">Privacy Policy</a>
+
+                        <a class="link-btn" href="../../assets/sitemap.xml">Sitemap</a>
+    
+                    </div>
+    
+                </div>
+    
+            </div>
+    
+        </div>
+    
+    </div>
+    
+
+    <script src="../../scripts/app.js"></script>
+
+</body>
+</html>
